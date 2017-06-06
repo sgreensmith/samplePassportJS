@@ -1,0 +1,7 @@
+<h1>Send SAML Authn request to hub</h1>
+
+<form method='post' action='{{sampleHubUrl}}?callback={{callbackUrl}}'>
+    <input type='hidden' name='SamlRequest' value='{{saml}}'></input>
+    <input type='hidden' name='RelayState' value='blah'></input>
+    <button>Submit</button>
+</form>

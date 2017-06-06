@@ -18,7 +18,7 @@ passport.use(new CustomStrategy({
 
 
 router.get('/passport-login', function(req, res, next) {
-    res.render('login');
+    res.render('passport-login');
 })
 
 router.post('/passport-login', passport.authenticate('custom', { successRedirect: '/', failureRedirect: '/passport-login' }));

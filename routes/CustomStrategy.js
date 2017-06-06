@@ -10,7 +10,7 @@ class Strategy extends passport.Strategy {
 
 	authenticate(req, options) {
 
-	    if (req.headers['referer'] === 'http://localhost:3001/authenticate') {
+	    if (req.headers['referer'].indexOf('http://localhost:3001/authenticate') === 0) {
 	        this.redirectionFromHub(req, options)
 	    } else {
 			this.redirectToHub(req, options)
