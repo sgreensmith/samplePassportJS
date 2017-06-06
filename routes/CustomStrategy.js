@@ -2,13 +2,15 @@ var passport = require('passport-strategy');
 
 
 class Strategy extends passport.Strategy {
-	constructor() {
+	constructor(options) {
       	super();
       	this.name = 'custom';
+      	this.options = options
 	}
 
 	authenticate(req, options) {
-	    if (isSamlBackFromHub) {
+
+	    if (req.headers['referer'] === 'http://localhost:3001/authenticate') {
 	        this.redirectionFromHub(req, options)
 	    } else {
 			this.redirectToHub(req, options)
@@ -16,17 +18,19 @@ class Strategy extends passport.Strategy {
 	}
 
 	redirectToHub(req, options) {
-		req.res.send(`<form method='post' action='http://localhost:3001/authenticate'><button>Submit</button></form>`)
+		req.res.send(`
+		<h1>Send SAML Authn request to hub</h1>
+		<form method='post' action='http://localhost:3001/authenticate?callback=${encodeURIComponent(this.options.callback)}'>
+			<button>Submit</button>
+		</form>`)
 	}
 
 	redirectionFromHub(req, options) {
-		var user = {username: 'sam'};
+		var user = {username: 'hristo'};
 
 		//this.error('bad saml', 400)
 
 		//this.fail('reason', 400)
-
-		this.redirectPostBack()
 
 		this.success(user, {});
 	}
