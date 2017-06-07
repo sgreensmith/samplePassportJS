@@ -2,6 +2,7 @@ const http = require('http')
 const URL = require('url').URL
 
 http.createServer( function(req, res) {
+
 	if (req.url == '/authn-request') {
 		res.writeHead(200, {'Content-Type': 'application/json'});
 		res.write(JSON.stringify({
@@ -15,4 +16,5 @@ http.createServer( function(req, res) {
 		}))
 		res.end()
 	}
+
 }).listen(3002);

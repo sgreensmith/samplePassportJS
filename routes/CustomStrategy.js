@@ -1,7 +1,10 @@
-var passport = require('passport-strategy');
-
+const passport = require('passport-strategy')
+const util = require('util')
+const formBody = util.promisify(require('body/form'))
+const request = require('request-promise-native')
 
 class Strategy extends passport.Strategy {
+
 	constructor(options) {
       	super();
       	this.name = 'custom';
@@ -10,29 +13,44 @@ class Strategy extends passport.Strategy {
 
 	authenticate(req, options) {
 
-	    if (req.headers['referer'].indexOf('http://localhost:3001/authenticate') === 0) {
-	        this.redirectionFromHub(req, options)
-	    } else {
-			this.redirectToHub(req, options)
-		}
+		formBody(req)
+		.then( body => {
+	    	if (!!body.saml) {
+	        	return this.redirectionFromHub(body, options)
+			} else {
+				return this.redirectToHub(req, options)
+			}
+		})
+		.catch( err => {this.error(err)})
 	}
 
 	redirectToHub(req, options) {
-		req.res.send(`
-		<h1>Send SAML Authn request to hub</h1>
-		<form method='post' action='http://localhost:3001/authenticate?callback=${encodeURIComponent(this.options.callback)}'>
-			<button>Submit</button>
-		</form>`)
+
+		return request(this.options.serviceProviderUrl + '/authn-request')
+		.then( samlAuthnRequest => {
+			req.res.send(`
+			<h1>Send SAML Authn request to hub</h1>
+			<form method='post' action='${this.options.sampleHubUrl}?callback=${encodeURIComponent(this.options.callbackUrl)}'>
+				<input type='hidden' name='saml' value='${samlAuthnRequest.saml}'/>
+				<input type='hidden' name='relayState' value='${this.options.relayState(req)}'/>
+				<button>Submit</button>
+			</form>`)
+		})
+
 	}
 
-	redirectionFromHub(req, options) {
-		var user = {username: 'hristo'};
+	redirectionFromHub(body, options) {
 
-		//this.error('bad saml', 400)
+		return request({
+			uri: this.options.serviceProviderUrl + '/authn-response',
+			body: { saml: body.saml },
+			method: 'POST',
+			json: true
+		})
+		.then( user => {
+			this.success(user, {});
+		})
 
-		//this.fail('reason', 400)
-
-		this.success(user, {});
 	}
 
 }

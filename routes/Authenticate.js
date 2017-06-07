@@ -1,5 +1,3 @@
-const https = require('https')
-const http = require('http')
 const util = require('util')
 const formBody = util.promisify(require('body/form'))
 const request = require('request-promise-native')
@@ -7,10 +5,9 @@ const request = require('request-promise-native')
 const Authenticate = {
 
     authenticate: (callbackUrl, serviceProviderUrl, ) => {
+
     	return async function (req, res, next) {
-
 			try {
-
 				let samlAuthnRequest = await request(serviceProviderUrl + '/authn-request')
 
 				res.send(`
@@ -20,12 +17,11 @@ const Authenticate = {
 						<button>Submit</button>
 					</form>
 				`)
-
 			} catch (err) {
 				next(err)
 			}
-
     	}
+
     },
 
     callback: async function (req, serviceProviderUrl) {
@@ -46,6 +42,7 @@ const Authenticate = {
 		return await request(serviceProviderUrl + '/authn-request')
 
 	}
+
 }
 
 module.exports = Authenticate

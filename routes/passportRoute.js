@@ -4,23 +4,35 @@ var passport = require('passport');
 var CustomStrategy = require('./CustomStrategy');
 
 passport.serializeUser(function(user, done) {
-  console.log('SERIALIZE')
-  done(null, user.username);
+	done(null, user.name)
 });
 
-passport.deserializeUser(function(username, done) {
-  done(null, { username: username })
+passport.deserializeUser(function(name, done) {
+	done(null, { username: name })
 });
 
+/**
+ * Configure the custom strategy with Service Provider and IDP urls
+ * Relay state is optional
+ */
 passport.use(new CustomStrategy({
-    callback: 'http://localhost:3000/passport-login'
+    callbackUrl: 'http://localhost:3000/passport-login',
+    relayState: req => {
+    	return 'relayState'
+    },
+	serviceProviderUrl: 'http://localhost:3002',
+	sampleHubUrl: 'http://localhost:3001/authenticate'
 }));
 
+/**
+ *  Initial login request required to generate a POST to the Passport middleware
+ */
+router.get('/passport-login', passport.authenticate('custom'));
 
-router.get('/passport-login', function(req, res, next) {
-    res.render('passport-login');
-})
-
-router.post('/passport-login', passport.authenticate('custom', { successRedirect: '/', failureRedirect: '/passport-login' }));
+/**
+ * Applies the passport middleware
+ *
+ */
+router.post('/passport-login', passport.authenticate('custom', { successRedirect: '/', failureRedirect: '/passport-login', session: true }));
 
 module.exports = router;
